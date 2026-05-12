@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -129,14 +130,15 @@ function TopNav() {
 }
 
 function BottomNav() {
-  const items: Array<{ to: "/" | "/library" | "/relief"; label: string }> = [
+  const items: Array<{ to: "/" | "/library" | "/relief" | "/reflection"; label: string }> = [
     { to: "/", label: "Home" },
     { to: "/library", label: "Library" },
     { to: "/relief", label: "Relief" },
+    { to: "/reflection", label: "Mirror" },
   ];
   return (
     <div className="fixed bottom-0 z-50 w-full border-t border-sage-900/5 bg-white/90 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-center justify-between px-12">
+      <div className="mx-auto flex max-w-md items-center justify-between px-10">
         {items.map((item) => (
           <Link
             key={item.to}
@@ -166,6 +168,24 @@ function BottomNav() {
   );
 }
 
+function SosButton() {
+  const location = useLocation();
+  if (location.pathname === "/sos") return null;
+  return (
+    <Link
+      to="/sos"
+      aria-label="Instant grounding — 60 second breathing exercise"
+      className="group fixed bottom-24 right-[max(env(safe-area-inset-right),1.25rem)] z-50 flex items-center gap-2 rounded-full bg-ochre px-5 py-3 text-white shadow-lg shadow-ochre/30 transition hover:scale-105 active:scale-95"
+    >
+      <span className="relative flex size-2.5">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
+        <span className="relative inline-flex size-2.5 rounded-full bg-white" />
+      </span>
+      <span className="text-xs font-bold uppercase tracking-widest">Breathe</span>
+    </Link>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -176,6 +196,7 @@ function RootComponent() {
         <main className="mx-auto max-w-md px-6 pb-32 pt-24">
           <Outlet />
         </main>
+        <SosButton />
         <BottomNav />
       </div>
     </QueryClientProvider>
