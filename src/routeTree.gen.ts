@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SosRouteImport } from './routes/sos'
 import { Route as ReliefRouteImport } from './routes/relief'
 import { Route as ReflectionRouteImport } from './routes/reflection'
+import { Route as PanicRouteImport } from './routes/panic'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PracticeThoughtSortingRouteImport } from './routes/practice.thought-sorting'
@@ -30,6 +31,11 @@ const ReliefRoute = ReliefRouteImport.update({
 const ReflectionRoute = ReflectionRouteImport.update({
   id: '/reflection',
   path: '/reflection',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PanicRoute = PanicRouteImport.update({
+  id: '/panic',
+  path: '/panic',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -56,6 +62,7 @@ const PracticeThoughtShredderRoute = PracticeThoughtShredderRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/panic': typeof PanicRoute
   '/reflection': typeof ReflectionRoute
   '/relief': typeof ReliefRoute
   '/sos': typeof SosRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/panic': typeof PanicRoute
   '/reflection': typeof ReflectionRoute
   '/relief': typeof ReliefRoute
   '/sos': typeof SosRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/panic': typeof PanicRoute
   '/reflection': typeof ReflectionRoute
   '/relief': typeof ReliefRoute
   '/sos': typeof SosRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/library'
+    | '/panic'
     | '/reflection'
     | '/relief'
     | '/sos'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/library'
+    | '/panic'
     | '/reflection'
     | '/relief'
     | '/sos'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/library'
+    | '/panic'
     | '/reflection'
     | '/relief'
     | '/sos'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LibraryRoute: typeof LibraryRoute
+  PanicRoute: typeof PanicRoute
   ReflectionRoute: typeof ReflectionRoute
   ReliefRoute: typeof ReliefRoute
   SosRoute: typeof SosRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/reflection'
       fullPath: '/reflection'
       preLoaderRoute: typeof ReflectionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/panic': {
+      id: '/panic'
+      path: '/panic'
+      fullPath: '/panic'
+      preLoaderRoute: typeof PanicRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LibraryRoute: LibraryRoute,
+  PanicRoute: PanicRoute,
   ReflectionRoute: ReflectionRoute,
   ReliefRoute: ReliefRoute,
   SosRoute: SosRoute,
@@ -187,3 +208,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

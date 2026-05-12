@@ -129,13 +129,16 @@ function TopNav() {
   );
 }
 
+import { Home, Library, Leaf, Sparkles } from "lucide-react";
+
 function BottomNav() {
-  const items: Array<{ to: "/" | "/library" | "/relief" | "/reflection"; label: string }> = [
-    { to: "/", label: "Home" },
-    { to: "/library", label: "Library" },
-    { to: "/relief", label: "Relief" },
-    { to: "/reflection", label: "Mirror" },
-  ];
+  const items = [
+    { to: "/", label: "Home", icon: Home },
+    { to: "/library", label: "Library", icon: Library },
+    { to: "/relief", label: "Relief", icon: Leaf },
+    { to: "/reflection", label: "Mirror", icon: Sparkles },
+  ] as const;
+
   return (
     <div className="fixed bottom-0 z-50 w-full border-t border-sage-900/5 bg-white/90 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 backdrop-blur-xl">
       <div className="mx-auto flex max-w-md items-center justify-between px-10">
@@ -150,11 +153,12 @@ function BottomNav() {
           >
             {({ isActive }) => (
               <>
-                <div
+                <item.icon
                   className={
-                    "size-1.5 rounded-full transition-transform " +
-                    (isActive ? "scale-125 bg-sage-900" : "bg-sage-400 group-hover:scale-110")
+                    "size-5 transition-transform " +
+                    (isActive ? "scale-110" : "group-hover:scale-110")
                   }
+                  strokeWidth={isActive ? 2.5 : 2}
                 />
                 <span className="text-[10px] font-bold uppercase tracking-tighter">
                   {item.label}
@@ -168,7 +172,7 @@ function BottomNav() {
   );
 }
 
-function SosButton() {
+function BreatheButton() {
   const location = useLocation();
   if (location.pathname === "/sos") return null;
   return (
@@ -186,6 +190,26 @@ function SosButton() {
   );
 }
 
+function PanicButton() {
+  const location = useLocation();
+  if (location.pathname === "/panic") return null;
+  return (
+    <Link
+      to="/panic"
+      aria-label="Emergency SOS — Send distress signal"
+      className="group fixed bottom-40 right-[max(env(safe-area-inset-right),1.25rem)] z-50 flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-white shadow-lg shadow-red-600/30 transition hover:scale-105 active:scale-95"
+    >
+      <span className="relative flex size-2.5">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
+        <span className="relative inline-flex size-2.5 rounded-full bg-white" />
+      </span>
+      <span className="text-xs font-bold uppercase tracking-widest">SOS</span>
+    </Link>
+  );
+}
+
+import { Toaster } from "@/components/ui/sonner";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -196,8 +220,10 @@ function RootComponent() {
         <main className="mx-auto max-w-md px-6 pb-32 pt-24">
           <Outlet />
         </main>
-        <SosButton />
+        <PanicButton />
+        <BreatheButton />
         <BottomNav />
+        <Toaster />
       </div>
     </QueryClientProvider>
   );
