@@ -9,38 +9,82 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReliefRouteImport } from './routes/relief'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PracticeThoughtSortingRouteImport } from './routes/practice.thought-sorting'
 
+const ReliefRoute = ReliefRouteImport.update({
+  id: '/relief',
+  path: '/relief',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PracticeThoughtSortingRoute = PracticeThoughtSortingRouteImport.update({
+  id: '/practice/thought-sorting',
+  path: '/practice/thought-sorting',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
+  '/relief': typeof ReliefRoute
+  '/practice/thought-sorting': typeof PracticeThoughtSortingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
+  '/relief': typeof ReliefRoute
+  '/practice/thought-sorting': typeof PracticeThoughtSortingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
+  '/relief': typeof ReliefRoute
+  '/practice/thought-sorting': typeof PracticeThoughtSortingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/library' | '/relief' | '/practice/thought-sorting'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/library' | '/relief' | '/practice/thought-sorting'
+  id: '__root__' | '/' | '/library' | '/relief' | '/practice/thought-sorting'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LibraryRoute: typeof LibraryRoute
+  ReliefRoute: typeof ReliefRoute
+  PracticeThoughtSortingRoute: typeof PracticeThoughtSortingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/relief': {
+      id: '/relief'
+      path: '/relief'
+      fullPath: '/relief'
+      preLoaderRoute: typeof ReliefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +92,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/practice/thought-sorting': {
+      id: '/practice/thought-sorting'
+      path: '/practice/thought-sorting'
+      fullPath: '/practice/thought-sorting'
+      preLoaderRoute: typeof PracticeThoughtSortingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LibraryRoute: LibraryRoute,
+  ReliefRoute: ReliefRoute,
+  PracticeThoughtSortingRoute: PracticeThoughtSortingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
