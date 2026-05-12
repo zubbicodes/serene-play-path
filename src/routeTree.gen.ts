@@ -9,14 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SosRouteImport } from './routes/sos'
 import { Route as ReliefRouteImport } from './routes/relief'
+import { Route as ReflectionRouteImport } from './routes/reflection'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PracticeThoughtSortingRouteImport } from './routes/practice.thought-sorting'
+import { Route as PracticeThoughtShredderRouteImport } from './routes/practice.thought-shredder'
 
+const SosRoute = SosRouteImport.update({
+  id: '/sos',
+  path: '/sos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReliefRoute = ReliefRouteImport.update({
   id: '/relief',
   path: '/relief',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReflectionRoute = ReflectionRouteImport.update({
+  id: '/reflection',
+  path: '/reflection',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -34,48 +47,101 @@ const PracticeThoughtSortingRoute = PracticeThoughtSortingRouteImport.update({
   path: '/practice/thought-sorting',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PracticeThoughtShredderRoute = PracticeThoughtShredderRouteImport.update({
+  id: '/practice/thought-shredder',
+  path: '/practice/thought-shredder',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/reflection': typeof ReflectionRoute
   '/relief': typeof ReliefRoute
+  '/sos': typeof SosRoute
+  '/practice/thought-shredder': typeof PracticeThoughtShredderRoute
   '/practice/thought-sorting': typeof PracticeThoughtSortingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/reflection': typeof ReflectionRoute
   '/relief': typeof ReliefRoute
+  '/sos': typeof SosRoute
+  '/practice/thought-shredder': typeof PracticeThoughtShredderRoute
   '/practice/thought-sorting': typeof PracticeThoughtSortingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/reflection': typeof ReflectionRoute
   '/relief': typeof ReliefRoute
+  '/sos': typeof SosRoute
+  '/practice/thought-shredder': typeof PracticeThoughtShredderRoute
   '/practice/thought-sorting': typeof PracticeThoughtSortingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/library' | '/relief' | '/practice/thought-sorting'
+  fullPaths:
+    | '/'
+    | '/library'
+    | '/reflection'
+    | '/relief'
+    | '/sos'
+    | '/practice/thought-shredder'
+    | '/practice/thought-sorting'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/library' | '/relief' | '/practice/thought-sorting'
-  id: '__root__' | '/' | '/library' | '/relief' | '/practice/thought-sorting'
+  to:
+    | '/'
+    | '/library'
+    | '/reflection'
+    | '/relief'
+    | '/sos'
+    | '/practice/thought-shredder'
+    | '/practice/thought-sorting'
+  id:
+    | '__root__'
+    | '/'
+    | '/library'
+    | '/reflection'
+    | '/relief'
+    | '/sos'
+    | '/practice/thought-shredder'
+    | '/practice/thought-sorting'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LibraryRoute: typeof LibraryRoute
+  ReflectionRoute: typeof ReflectionRoute
   ReliefRoute: typeof ReliefRoute
+  SosRoute: typeof SosRoute
+  PracticeThoughtShredderRoute: typeof PracticeThoughtShredderRoute
   PracticeThoughtSortingRoute: typeof PracticeThoughtSortingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sos': {
+      id: '/sos'
+      path: '/sos'
+      fullPath: '/sos'
+      preLoaderRoute: typeof SosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/relief': {
       id: '/relief'
       path: '/relief'
       fullPath: '/relief'
       preLoaderRoute: typeof ReliefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reflection': {
+      id: '/reflection'
+      path: '/reflection'
+      fullPath: '/reflection'
+      preLoaderRoute: typeof ReflectionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -99,13 +165,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeThoughtSortingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/practice/thought-shredder': {
+      id: '/practice/thought-shredder'
+      path: '/practice/thought-shredder'
+      fullPath: '/practice/thought-shredder'
+      preLoaderRoute: typeof PracticeThoughtShredderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LibraryRoute: LibraryRoute,
+  ReflectionRoute: ReflectionRoute,
   ReliefRoute: ReliefRoute,
+  SosRoute: SosRoute,
+  PracticeThoughtShredderRoute: PracticeThoughtShredderRoute,
   PracticeThoughtSortingRoute: PracticeThoughtSortingRoute,
 }
 export const routeTree = rootRouteImport
