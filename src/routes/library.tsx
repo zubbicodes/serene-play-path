@@ -1,4 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
+import gsap from "gsap";
+import {
+  ArrowLeft,
+  Check,
+  HelpCircle,
+  MessageCircleQuestion,
+  Puzzle,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export const Route = createFileRoute("/library")({
   head: () => ({
@@ -6,79 +17,462 @@ export const Route = createFileRoute("/library")({
       { title: "Library — MindQuest" },
       {
         name: "description",
-        content:
-          "Bite-sized lessons on the science of a calmer, more resilient mind.",
+        content: "Mental wellness mini-games that build emotional awareness through gentle play.",
       },
     ],
   }),
   component: LibraryPage,
 });
 
-const lessons = [
+type WordLevel = {
+  word: string;
+  letters: string[];
+  hint: string;
+};
+
+const WORD_LEVELS: WordLevel[] = [
   {
-    chapter: "Chapter 01",
-    title: "Neuroplasticity",
-    blurb: "How the brain quietly reshapes itself.",
-    duration: "5 min",
+    word: "CALM",
+    letters: ["M", "C", "A", "L", "B", "E"],
+    hint: "A steady feeling you can return to with slow breathing.",
   },
   {
-    chapter: "Chapter 02",
-    title: "The Vagus Nerve",
-    blurb: "Tapping into your body's calm circuit.",
-    duration: "6 min",
+    word: "REST",
+    letters: ["T", "R", "S", "E", "A", "O"],
+    hint: "Your mind and body need this to recover.",
   },
   {
-    chapter: "Chapter 03",
-    title: "Cognitive Distortions",
-    blurb: "Spotting the small lies the mind tells.",
-    duration: "7 min",
+    word: "HOPE",
+    letters: ["P", "H", "E", "O", "L", "S"],
+    hint: "The belief that things can get better.",
   },
   {
-    chapter: "Chapter 04",
-    title: "The Window of Tolerance",
-    blurb: "Knowing when to push and when to rest.",
-    duration: "5 min",
+    word: "FOCUS",
+    letters: ["S", "O", "F", "U", "C", "A", "T"],
+    hint: "Bringing attention back to one thing at a time.",
+  },
+  {
+    word: "SUPPORT",
+    letters: ["P", "S", "T", "U", "O", "R", "P", "B", "A"],
+    hint: "What we receive from trusted people, routines, and care.",
+  },
+];
+
+type QuizLevel = {
+  question: string;
+  options: string[];
+  answer: string;
+  note: string;
+};
+
+const QUIZ_LEVELS: QuizLevel[] = [
+  {
+    question: "What is a helpful first step when anxiety feels loud?",
+    options: ["Name five things you see", "Ignore every feeling", "Hold your breath"],
+    answer: "Name five things you see",
+    note: "Grounding through the senses can help the body notice the present moment.",
+  },
+  {
+    question: "Which thought is more self-compassionate?",
+    options: ["I am learning", "I always fail", "I should never struggle"],
+    answer: "I am learning",
+    note: "Self-compassion leaves room for growth without harsh self-judgment.",
+  },
+  {
+    question: "What can support sleep quality?",
+    options: ["A steady wind-down routine", "Scrolling late in bed", "Caffeine at night"],
+    answer: "A steady wind-down routine",
+    note: "Small predictable routines can tell the nervous system it is safe to rest.",
+  },
+  {
+    question: "What is a healthy boundary?",
+    options: ["Saying what you can offer", "Saying yes to everything", "Hiding all needs"],
+    answer: "Saying what you can offer",
+    note: "Boundaries help protect energy while keeping relationships clear.",
+  },
+  {
+    question: "When someone shares a hard feeling, what helps most?",
+    options: ["Listen and validate", "Quickly fix everything", "Change the subject"],
+    answer: "Listen and validate",
+    note: "Being heard can reduce isolation and make support feel safer.",
+  },
+];
+
+type GameId = "word" | "quiz";
+
+const GAME_CARDS: Array<{
+  id: GameId;
+  title: string;
+  label: string;
+  blurb: string;
+  action: string;
+}> = [
+  {
+    id: "word",
+    title: "Word Guess",
+    label: "Vocabulary",
+    blurb: "Arrange mental health themed letters into the right word across five levels.",
+    action: "Play Word",
+  },
+  {
+    id: "quiz",
+    title: "Perspective Quiz",
+    label: "Awareness",
+    blurb: "Answer five gentle questions about support, boundaries, rest, and coping.",
+    action: "Play Quiz",
   },
 ];
 
 function LibraryPage() {
+  const [activeGame, setActiveGame] = useState<GameId | null>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const screenRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = activeGame ? screenRef.current : cardsRef.current;
+    if (!target) return;
+
+    gsap.fromTo(
+      target,
+      { autoAlpha: 0, y: 22 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.42,
+        ease: "power3.out",
+      },
+    );
+
+    if (!activeGame && cardsRef.current) {
+      gsap.fromTo(
+        cardsRef.current.querySelectorAll(".game-card"),
+        { autoAlpha: 0, y: 24, scale: 0.96 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.55,
+          ease: "power3.out",
+          stagger: 0.09,
+        },
+      );
+    }
+  }, [activeGame]);
+
+  if (activeGame) {
+    return (
+      <div ref={screenRef} className="space-y-5 opacity-0">
+        <button
+          type="button"
+          onClick={() => setActiveGame(null)}
+          className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-sage-700 shadow-xs transition hover:bg-sage-50"
+        >
+          <ArrowLeft className="size-4" />
+          Games
+        </button>
+
+        {activeGame === "word" ? <WordGuessGame /> : <QuizGame />}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-10 animate-fade-up">
+    <div className="space-y-8 animate-fade-up">
       <header>
         <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-sage-600">
-          The Learning Hub
+          Mind Games
         </span>
-        <h1 className="mt-2 font-display text-3xl">A quiet curriculum.</h1>
+        <h1 className="mt-2 font-display text-3xl">Practice through play.</h1>
         <p className="mt-2 max-w-[36ch] text-sm text-sage-600">
-          Short readings, written by clinicians. Take one when you have a
-          moment.
+          Build gentle mental health vocabulary and perspective with two five-level in-app games.
         </p>
       </header>
 
-      <ol className="space-y-3">
-        {lessons.map((l, i) => (
-          <li
-            key={l.title}
-            className="group rounded-2xl border border-sage-900/5 bg-white p-5 shadow-xs transition hover:-translate-y-0.5 hover:shadow-sm"
-          >
-            <div className="flex items-start gap-4">
-              <div className="grid size-10 shrink-0 place-items-center rounded-full bg-sage-50 font-display text-sm">
-                {String(i + 1).padStart(2, "0")}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-widest text-sage-400">
-                    {l.chapter}
-                  </span>
-                  <span className="text-[10px] text-sage-400">{l.duration}</span>
-                </div>
-                <h3 className="mt-1 text-base font-medium">{l.title}</h3>
-                <p className="mt-1 text-sm text-sage-600">{l.blurb}</p>
-              </div>
-            </div>
-          </li>
+      <section ref={cardsRef} className="space-y-4 opacity-0">
+        {GAME_CARDS.map((game) => (
+          <GameCard key={game.id} game={game} onSelect={() => setActiveGame(game.id)} />
         ))}
-      </ol>
+      </section>
+    </div>
+  );
+}
+
+function GameCard({ game, onSelect }: { game: (typeof GAME_CARDS)[number]; onSelect: () => void }) {
+  const Icon = game.id === "word" ? Puzzle : MessageCircleQuestion;
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="game-card w-full rounded-3xl border border-sage-900/5 bg-white p-5 text-left opacity-0 shadow-xs transition hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.99]"
+    >
+      <div className="flex items-start gap-4">
+        <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-sage-50 text-sage-700">
+          <Icon className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-ochre">
+              {game.label}
+            </span>
+            <LevelBadge current={5} total={5} compact />
+          </div>
+          <h2 className="mt-2 font-display text-2xl">{game.title}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-sage-600">{game.blurb}</p>
+          <span className="mt-4 inline-flex rounded-full bg-sage-900 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground">
+            {game.action}
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function WordGuessGame() {
+  const [levelIndex, setLevelIndex] = useState(0);
+  const [picked, setPicked] = useState<number[]>([]);
+  const [message, setMessage] = useState("Tap letters to fill the boxes.");
+  const level = WORD_LEVELS[levelIndex];
+  const guess = picked.map((i) => level.letters[i]).join("");
+  const complete = levelIndex === WORD_LEVELS.length - 1 && guess === level.word;
+
+  const slots = useMemo(
+    () => Array.from({ length: level.word.length }, (_, i) => guess[i] ?? ""),
+    [guess, level.word.length],
+  );
+
+  function resetGuess(nextMessage = "Tap letters to fill the boxes.") {
+    setPicked([]);
+    setMessage(nextMessage);
+  }
+
+  function handleLetter(index: number) {
+    if (picked.includes(index) || picked.length >= level.word.length) return;
+    const nextPicked = [...picked, index];
+    const nextGuess = nextPicked.map((i) => level.letters[i]).join("");
+    setPicked(nextPicked);
+
+    if (nextGuess.length !== level.word.length) {
+      setMessage("Keep going.");
+      return;
+    }
+
+    if (nextGuess === level.word) {
+      setMessage(
+        levelIndex === WORD_LEVELS.length - 1
+          ? "You finished all five word levels."
+          : "Correct. Move to the next word.",
+      );
+    } else {
+      setMessage("Not quite. Try the letters in a new order.");
+    }
+  }
+
+  function goNextLevel() {
+    if (levelIndex < WORD_LEVELS.length - 1) {
+      setLevelIndex((i) => i + 1);
+      resetGuess("New word. Use the hint.");
+    }
+  }
+
+  return (
+    <section className="rounded-3xl border border-sage-900/5 bg-white p-5 shadow-xs">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-ochre">
+            Word Guess
+          </span>
+          <h2 className="mt-1 font-display text-2xl">Find the feeling word.</h2>
+        </div>
+        <LevelBadge current={levelIndex + 1} total={WORD_LEVELS.length} />
+      </div>
+
+      <p className="mt-4 rounded-2xl bg-sage-50 p-4 text-sm leading-relaxed text-sage-700">
+        {level.hint}
+      </p>
+
+      <div className="mt-5 flex flex-wrap justify-center gap-2">
+        {slots.map((letter, index) => (
+          <div
+            key={`${level.word}-${index}`}
+            className="grid size-12 place-items-center rounded-2xl border border-sage-900/10 bg-sand-100 font-display text-xl"
+          >
+            {letter}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5 grid grid-cols-5 gap-2">
+        {level.letters.map((letter, index) => {
+          const isPicked = picked.includes(index);
+          return (
+            <button
+              key={`${letter}-${index}`}
+              type="button"
+              onClick={() => handleLetter(index)}
+              disabled={isPicked || complete}
+              className="grid aspect-square place-items-center rounded-2xl bg-sage-100 font-semibold text-sage-900 transition hover:bg-sage-200 disabled:opacity-35"
+            >
+              {letter}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <p className="text-sm text-sage-600">{message}</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => resetGuess()}
+            aria-label="Reset word guess"
+            className="grid size-10 place-items-center rounded-full border border-sage-900/10 text-sage-600 transition hover:bg-sage-50"
+          >
+            <RotateCcw className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={goNextLevel}
+            disabled={guess !== level.word || levelIndex === WORD_LEVELS.length - 1}
+            className="rounded-full bg-sage-900 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground transition hover:bg-sage-600 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QuizGame() {
+  const [levelIndex, setLevelIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [answered, setAnswered] = useState(false);
+  const level = QUIZ_LEVELS[levelIndex];
+  const isCorrect = selected === level.answer;
+  const finished = levelIndex === QUIZ_LEVELS.length - 1 && answered && isCorrect;
+
+  function choose(option: string) {
+    if (answered) return;
+    setSelected(option);
+    setAnswered(true);
+  }
+
+  function nextQuestion() {
+    if (levelIndex < QUIZ_LEVELS.length - 1) {
+      setLevelIndex((i) => i + 1);
+      setSelected(null);
+      setAnswered(false);
+    }
+  }
+
+  function retryQuestion() {
+    setSelected(null);
+    setAnswered(false);
+  }
+
+  return (
+    <section className="rounded-3xl border border-sage-900/5 bg-white p-5 shadow-xs">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-ochre">
+            Perspective Quiz
+          </span>
+          <h2 className="mt-1 font-display text-2xl">Choose the kind answer.</h2>
+        </div>
+        <LevelBadge current={levelIndex + 1} total={QUIZ_LEVELS.length} />
+      </div>
+
+      <div className="mt-5 rounded-2xl bg-sage-50 p-5">
+        <HelpCircle className="mb-3 size-5 text-sage-500" />
+        <p className="text-base font-medium leading-relaxed">{level.question}</p>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {level.options.map((option) => {
+          const isSelected = selected === option;
+          const showCorrect = answered && option === level.answer;
+          const showWrong = answered && isSelected && !isCorrect;
+
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => choose(option)}
+              className={
+                "flex w-full items-center justify-between rounded-2xl border p-4 text-left text-sm transition " +
+                (showCorrect
+                  ? "border-sage-600 bg-sage-100 text-sage-900"
+                  : showWrong
+                    ? "border-red-200 bg-red-50 text-red-900"
+                    : "border-sage-900/10 hover:bg-sage-50")
+              }
+            >
+              <span>{option}</span>
+              {showCorrect ? <Check className="size-4" /> : null}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-5 min-h-20 rounded-2xl border border-sage-900/5 bg-sand-100 p-4">
+        {answered ? (
+          <>
+            <p className="text-sm font-semibold">
+              {isCorrect ? "That is right." : "Close. Try the gentler option."}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-sage-600">
+              {isCorrect ? level.note : "Look for the answer that supports steadiness and care."}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm leading-relaxed text-sage-600">
+            Pick the response that supports mental wellbeing.
+          </p>
+        )}
+      </div>
+
+      <div className="mt-5 flex justify-end gap-2">
+        {answered && !isCorrect ? (
+          <button
+            type="button"
+            onClick={retryQuestion}
+            className="rounded-full border border-sage-900/10 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-sage-700 transition hover:bg-sage-50"
+          >
+            Retry
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={nextQuestion}
+          disabled={!answered || !isCorrect || levelIndex === QUIZ_LEVELS.length - 1}
+          className="rounded-full bg-sage-900 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground transition hover:bg-sage-600 disabled:cursor-not-allowed disabled:opacity-35"
+        >
+          {finished ? "Done" : "Next"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function LevelBadge({
+  current,
+  total,
+  compact = false,
+}: {
+  current: number;
+  total: number;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={
+        "flex shrink-0 items-center gap-1.5 rounded-full bg-sage-50 text-xs font-semibold text-sage-700 " +
+        (compact ? "px-2.5 py-1.5" : "px-3 py-2")
+      }
+    >
+      <Sparkles className="size-3.5 text-ochre" />
+      {current}/{total}
     </div>
   );
 }
