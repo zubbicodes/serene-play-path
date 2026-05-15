@@ -2,14 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import gsap from "gsap";
 import {
   ArrowLeft,
+  ArrowRight,
   Check,
+  Heart,
   HelpCircle,
   MessageCircleQuestion,
   Puzzle,
   RotateCcw,
+  Shuffle,
   Sparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent } from "react";
 
 export const Route = createFileRoute("/library")({
   head: () => ({
@@ -98,7 +102,80 @@ const QUIZ_LEVELS: QuizLevel[] = [
   },
 ];
 
-type GameId = "word" | "quiz";
+type SwipeLevel = {
+  prompt: string;
+  kind: "keep" | "release";
+  note: string;
+};
+
+const SWIPE_LEVELS: SwipeLevel[] = [
+  {
+    prompt: "I can pause before I respond.",
+    kind: "keep",
+    note: "This thought creates space between a feeling and an action.",
+  },
+  {
+    prompt: "Everyone must like me for me to be okay.",
+    kind: "release",
+    note: "Your worth can stay steady even when approval changes.",
+  },
+  {
+    prompt: "One small step still counts.",
+    kind: "keep",
+    note: "Small steps are often how calmer days begin.",
+  },
+  {
+    prompt: "If I feel anxious, something bad is definitely happening.",
+    kind: "release",
+    note: "Anxiety is a signal, not always a fact.",
+  },
+  {
+    prompt: "I am allowed to ask for support.",
+    kind: "keep",
+    note: "Support is a healthy resource, not a weakness.",
+  },
+  {
+    prompt: "I can only rest after everything is finished.",
+    kind: "release",
+    note: "Rest is part of caring for your energy, not a prize you have to earn.",
+  },
+  {
+    prompt: "This feeling is temporary.",
+    kind: "keep",
+    note: "Naming a feeling as temporary can make it easier to sit beside.",
+  },
+  {
+    prompt: "One mistake means the whole day is ruined.",
+    kind: "release",
+    note: "A hard moment does not get to define the whole day.",
+  },
+  {
+    prompt: "I can return to my breath for one minute.",
+    kind: "keep",
+    note: "A short reset can help your body find the present again.",
+  },
+  {
+    prompt: "I should be able to handle everything alone.",
+    kind: "release",
+    note: "Needing help is human, and connection can make stress lighter.",
+  },
+  {
+    prompt: "My pace can be different today.",
+    kind: "keep",
+    note: "Flexible pacing helps you respond to what your mind and body need.",
+  },
+  {
+    prompt: "If I cannot do it perfectly, I should not start.",
+    kind: "release",
+    note: "Imperfect starts still create movement.",
+  },
+];
+
+function shuffleDeck(levels: SwipeLevel[]) {
+  return [...levels].sort(() => Math.random() - 0.5);
+}
+
+type GameId = "word" | "quiz" | "swipe";
 
 const GAME_CARDS: Array<{
   id: GameId;
@@ -106,6 +183,7 @@ const GAME_CARDS: Array<{
   label: string;
   blurb: string;
   action: string;
+  levels: number;
 }> = [
   {
     id: "word",
@@ -113,6 +191,7 @@ const GAME_CARDS: Array<{
     label: "Vocabulary",
     blurb: "Arrange mental health themed letters into the right word across five levels.",
     action: "Play Word",
+    levels: WORD_LEVELS.length,
   },
   {
     id: "quiz",
@@ -120,6 +199,15 @@ const GAME_CARDS: Array<{
     label: "Awareness",
     blurb: "Answer five gentle questions about support, boundaries, rest, and coping.",
     action: "Play Quiz",
+    levels: QUIZ_LEVELS.length,
+  },
+  {
+    id: "swipe",
+    title: "Calm Swipe",
+    label: "Card Game",
+    blurb: "Swipe a shuffled deck of thoughts to keep close or release.",
+    action: "Play Swipe",
+    levels: SWIPE_LEVELS.length,
   },
 ];
 
@@ -171,7 +259,13 @@ function LibraryPage() {
           Games
         </button>
 
-        {activeGame === "word" ? <WordGuessGame /> : <QuizGame />}
+        {activeGame === "word" ? (
+          <WordGuessGame />
+        ) : activeGame === "quiz" ? (
+          <QuizGame />
+        ) : (
+          <SwipeGame />
+        )}
       </div>
     );
   }
@@ -184,7 +278,7 @@ function LibraryPage() {
         </span>
         <h1 className="mt-2 font-display text-3xl">Practice through play.</h1>
         <p className="mt-2 max-w-[36ch] text-sm text-sage-600">
-          Build gentle mental health vocabulary and perspective with two five-level in-app games.
+          Build gentle mental health vocabulary and perspective with three gentle in-app games.
         </p>
       </header>
 
@@ -198,7 +292,7 @@ function LibraryPage() {
 }
 
 function GameCard({ game, onSelect }: { game: (typeof GAME_CARDS)[number]; onSelect: () => void }) {
-  const Icon = game.id === "word" ? Puzzle : MessageCircleQuestion;
+  const Icon = game.id === "word" ? Puzzle : game.id === "quiz" ? MessageCircleQuestion : Shuffle;
 
   return (
     <button
@@ -215,7 +309,7 @@ function GameCard({ game, onSelect }: { game: (typeof GAME_CARDS)[number]; onSel
             <span className="text-[10px] font-bold uppercase tracking-widest text-ochre">
               {game.label}
             </span>
-            <LevelBadge current={5} total={5} compact />
+            <LevelBadge current={game.levels} total={game.levels} compact />
           </div>
           <h2 className="mt-2 font-display text-2xl">{game.title}</h2>
           <p className="mt-2 text-sm leading-relaxed text-sage-600">{game.blurb}</p>
@@ -449,6 +543,171 @@ function QuizGame() {
           className="rounded-full bg-sage-900 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground transition hover:bg-sage-600 disabled:cursor-not-allowed disabled:opacity-35"
         >
           {finished ? "Done" : "Next"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function SwipeGame() {
+  const [deck, setDeck] = useState<SwipeLevel[]>(() => shuffleDeck(SWIPE_LEVELS));
+  const [levelIndex, setLevelIndex] = useState(0);
+  const [kept, setKept] = useState(0);
+  const [released, setReleased] = useState(0);
+  const [feedback, setFeedback] = useState("Swipe right to keep. Swipe left to release.");
+  const [dragStart, setDragStart] = useState<number | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const [isMoving, setIsMoving] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const level = deck[levelIndex];
+  const done = levelIndex >= deck.length;
+  const rotation = Math.max(-10, Math.min(10, dragX / 14));
+
+  function moveNext(choice: SwipeLevel["kind"]) {
+    if (!level || isMoving) return;
+    const isCorrect = choice === level.kind;
+    setIsMoving(true);
+
+    if (choice === "keep") {
+      setKept((count) => count + 1);
+    } else {
+      setReleased((count) => count + 1);
+    }
+
+    setFeedback(isCorrect ? level.note : "Good noticing. This one may fit better the other way.");
+    setDragX(choice === "keep" ? 180 : -180);
+
+    window.setTimeout(() => {
+      setLevelIndex((index) => index + 1);
+      setDragStart(null);
+      setDragX(0);
+      setIsMoving(false);
+      if (levelIndex < deck.length - 1) {
+        setFeedback("Swipe right to keep. Swipe left to release.");
+      }
+    }, 380);
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (done || isMoving) return;
+    cardRef.current?.setPointerCapture(event.pointerId);
+    setDragStart(event.clientX);
+  }
+
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (dragStart === null || done || isMoving) return;
+    setDragX(event.clientX - dragStart);
+  }
+
+  function handlePointerUp() {
+    if (dragStart === null || done || isMoving) return;
+    if (dragX > 80) {
+      moveNext("keep");
+    } else if (dragX < -80) {
+      moveNext("release");
+    } else {
+      setDragStart(null);
+      setDragX(0);
+    }
+  }
+
+  function restart() {
+    setDeck(shuffleDeck(SWIPE_LEVELS));
+    setLevelIndex(0);
+    setKept(0);
+    setReleased(0);
+    setFeedback("Swipe right to keep. Swipe left to release.");
+    setDragStart(null);
+    setDragX(0);
+    setIsMoving(false);
+  }
+
+  if (done) {
+    return (
+      <section className="rounded-3xl border border-sage-900/5 bg-white p-6 text-center shadow-xs">
+        <div className="mx-auto grid size-12 place-items-center rounded-full bg-ochre/15">
+          <Heart className="size-5 text-ochre" />
+        </div>
+        <h2 className="mt-4 font-display text-2xl">Deck complete.</h2>
+        <p className="mx-auto mt-2 max-w-[30ch] text-sm leading-relaxed text-sage-600">
+          You kept {kept} thoughts close and released {released}. Notice what your mind chose.
+        </p>
+        <button
+          type="button"
+          onClick={restart}
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-sage-900 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground transition hover:bg-sage-600"
+        >
+          <RotateCcw className="size-4" />
+          Again
+        </button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="overflow-hidden rounded-3xl border border-sage-900/5 bg-white p-5 shadow-xs">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-ochre">
+            Calm Swipe
+          </span>
+          <h2 className="mt-1 font-display text-2xl">Keep or release.</h2>
+        </div>
+        <LevelBadge current={levelIndex + 1} total={deck.length} />
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-2 text-center text-xs font-semibold uppercase tracking-widest">
+        <div className="rounded-2xl bg-sand-100 px-3 py-2 text-sage-500">Release</div>
+        <div className="rounded-2xl bg-sage-50 px-3 py-2 text-sage-700">Keep</div>
+      </div>
+
+      <div className="relative mt-5 grid min-h-[280px] place-items-center rounded-3xl bg-gradient-to-b from-sage-50 to-sand-200 p-5">
+        <div className="absolute inset-x-8 top-8 h-52 rotate-[-5deg] rounded-3xl bg-white/55" />
+        <div className="absolute inset-x-10 top-10 h-52 rotate-[5deg] rounded-3xl bg-white/70" />
+        <div
+          ref={cardRef}
+          role="button"
+          tabIndex={0}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="relative z-10 grid h-56 w-full max-w-[19rem] touch-none select-none place-items-center rounded-3xl border border-sage-900/5 bg-white p-7 text-center shadow-sm transition-transform duration-150"
+          style={{
+            transform: `translateX(${dragX}px) rotate(${rotation}deg)`,
+            opacity: Math.max(0.4, 1 - Math.abs(dragX) / 260),
+          }}
+        >
+          <span className="text-[10px] font-bold uppercase tracking-widest text-sage-400">
+            Thought card
+          </span>
+          <p className="mt-3 font-display text-2xl leading-snug text-balance">"{level.prompt}"</p>
+          <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-sage-500">
+            <ArrowLeft className="size-4" />
+            Swipe
+            <ArrowRight className="size-4" />
+          </div>
+        </div>
+      </div>
+
+      <p className="mt-4 min-h-10 text-sm leading-relaxed text-sage-600">{feedback}</p>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => moveNext("release")}
+          disabled={isMoving}
+          className="rounded-2xl border border-sage-900/10 bg-white py-4 text-sm font-semibold text-sage-700 transition hover:bg-sage-50"
+        >
+          Release
+        </button>
+        <button
+          type="button"
+          onClick={() => moveNext("keep")}
+          disabled={isMoving}
+          className="rounded-2xl bg-sage-900 py-4 text-sm font-semibold text-primary-foreground transition hover:bg-sage-600"
+        >
+          Keep
         </button>
       </div>
     </section>

@@ -108,7 +108,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function TopNav() {
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-sage-900/5 bg-sand-100/80 backdrop-blur-md">
+    <nav className="mobile-top-nav border-b border-sage-900/5 bg-sand-100/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-md items-center justify-between px-6">
         <Link to="/" className="font-display text-xl italic tracking-tight">
           MindQuest
@@ -140,7 +140,7 @@ function BottomNav() {
   ] as const;
 
   return (
-    <div className="fixed bottom-0 z-50 w-full border-t border-sage-900/5 bg-white/90 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 backdrop-blur-xl">
+    <div className="mobile-bottom-nav border-t border-sage-900/5 bg-white/90 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 backdrop-blur-xl">
       <div className="mx-auto flex max-w-md items-center justify-between px-10">
         {items.map((item) => (
           <Link
@@ -174,12 +174,12 @@ function BottomNav() {
 
 function BreatheButton() {
   const location = useLocation();
-  if (location.pathname === "/sos") return null;
+  if (location.pathname !== "/") return null;
   return (
     <Link
       to="/sos"
       aria-label="Instant grounding — 60 second breathing exercise"
-      className="group fixed bottom-24 right-[max(env(safe-area-inset-right),1.25rem)] z-50 flex items-center gap-2 rounded-full bg-ochre px-5 py-3 text-white shadow-lg shadow-ochre/30 transition hover:scale-105 active:scale-95"
+      className="mobile-floating-action mobile-floating-breathe group flex items-center gap-2 rounded-full bg-ochre px-5 py-3 text-white shadow-lg shadow-ochre/30 transition hover:scale-105 active:scale-95"
     >
       <span className="relative flex size-2.5">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
@@ -192,12 +192,12 @@ function BreatheButton() {
 
 function PanicButton() {
   const location = useLocation();
-  if (location.pathname === "/panic") return null;
+  if (location.pathname !== "/") return null;
   return (
     <Link
       to="/panic"
       aria-label="Emergency SOS — Send distress signal"
-      className="group fixed bottom-40 right-[max(env(safe-area-inset-right),1.25rem)] z-50 flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-white shadow-lg shadow-red-600/30 transition hover:scale-105 active:scale-95"
+      className="mobile-floating-action mobile-floating-panic group flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-white shadow-lg shadow-red-600/30 transition hover:scale-105 active:scale-95"
     >
       <span className="relative flex size-2.5">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
@@ -215,15 +215,30 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-sand-100 text-sage-900">
-        <TopNav />
-        <main className="mx-auto max-w-md px-6 pb-32 pt-24">
-          <Outlet />
-        </main>
-        <PanicButton />
-        <BreatheButton />
-        <BottomNav />
-        <Toaster />
+      <div className="mobile-demo-stage">
+        <div className="mobile-device-frame" aria-label="MindQuest mobile app preview">
+          <div className="mobile-device-speaker" aria-hidden="true" />
+          <div className="mobile-app-screen">
+            <div className="mobile-status-bar" aria-hidden="true">
+              <span>9:41</span>
+              <div className="flex items-center gap-1.5">
+                <span className="mobile-signal" />
+                <span className="mobile-wifi" />
+                <span className="mobile-battery" />
+              </div>
+            </div>
+            <TopNav />
+            <div className="mobile-app-scroll min-h-full bg-sand-100 text-sage-900">
+              <main className="mx-auto max-w-md px-6 pb-32 pt-24">
+                <Outlet />
+              </main>
+              <Toaster />
+            </div>
+            <BottomNav />
+            <PanicButton />
+            <BreatheButton />
+          </div>
+        </div>
       </div>
     </QueryClientProvider>
   );
