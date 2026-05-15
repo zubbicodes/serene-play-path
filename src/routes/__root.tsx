@@ -4,7 +4,6 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -129,7 +128,7 @@ function TopNav() {
   );
 }
 
-import { Home, Library, Leaf, Sparkles } from "lucide-react";
+import { Home, Leaf, Library, Sparkles, TriangleAlert } from "lucide-react";
 
 function BottomNav() {
   const items = [
@@ -137,11 +136,12 @@ function BottomNav() {
     { to: "/library", label: "Library", icon: Library },
     { to: "/relief", label: "Relief", icon: Leaf },
     { to: "/reflection", label: "Mirror", icon: Sparkles },
+    { to: "/panic", label: "SOS", icon: TriangleAlert },
   ] as const;
 
   return (
     <div className="mobile-bottom-nav border-t border-sage-900/5 bg-white/90 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-center justify-between px-10">
+      <div className="mx-auto flex max-w-md items-center justify-between px-7">
         {items.map((item) => (
           <Link
             key={item.to}
@@ -172,42 +172,6 @@ function BottomNav() {
   );
 }
 
-function BreatheButton() {
-  const location = useLocation();
-  if (location.pathname !== "/") return null;
-  return (
-    <Link
-      to="/sos"
-      aria-label="Instant grounding — 60 second breathing exercise"
-      className="mobile-floating-action mobile-floating-breathe group flex items-center gap-2 rounded-full bg-ochre px-5 py-3 text-white shadow-lg shadow-ochre/30 transition hover:scale-105 active:scale-95"
-    >
-      <span className="relative flex size-2.5">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
-        <span className="relative inline-flex size-2.5 rounded-full bg-white" />
-      </span>
-      <span className="text-xs font-bold uppercase tracking-widest">Breathe</span>
-    </Link>
-  );
-}
-
-function PanicButton() {
-  const location = useLocation();
-  if (location.pathname !== "/") return null;
-  return (
-    <Link
-      to="/panic"
-      aria-label="Emergency SOS — Send distress signal"
-      className="mobile-floating-action mobile-floating-panic group flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-white shadow-lg shadow-red-600/30 transition hover:scale-105 active:scale-95"
-    >
-      <span className="relative flex size-2.5">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
-        <span className="relative inline-flex size-2.5 rounded-full bg-white" />
-      </span>
-      <span className="text-xs font-bold uppercase tracking-widest">SOS</span>
-    </Link>
-  );
-}
-
 import { Toaster } from "@/components/ui/sonner";
 
 function RootComponent() {
@@ -235,8 +199,6 @@ function RootComponent() {
               <Toaster />
             </div>
             <BottomNav />
-            <PanicButton />
-            <BreatheButton />
           </div>
         </div>
       </div>

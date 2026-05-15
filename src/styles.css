@@ -210,20 +210,6 @@
   width: 100%;
 }
 
-.mobile-floating-action {
-  position: absolute;
-  right: max(env(safe-area-inset-right), 1.25rem);
-  z-index: 55;
-}
-
-.mobile-floating-breathe {
-  bottom: 6rem;
-}
-
-.mobile-floating-panic {
-  bottom: 10rem;
-}
-
 .mobile-status-bar {
   position: sticky;
   top: 0;

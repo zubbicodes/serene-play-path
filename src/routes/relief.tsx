@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/relief")({
@@ -36,6 +36,24 @@ function ReliefPage() {
       </header>
 
       <BreathingPractice />
+
+      <Link
+        to="/sos"
+        className="flex items-center justify-between gap-4 rounded-3xl border border-ochre/20 bg-ochre/10 p-5 text-left shadow-xs transition hover:bg-ochre/15 active:scale-[0.99]"
+      >
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-ochre">
+            60 second reset
+          </span>
+          <h2 className="mt-2 font-display text-2xl">Breathe and ground.</h2>
+          <p className="mt-1 text-sm leading-relaxed text-sage-600">
+            A short 5-4-3-2-1 practice for moments that need a quick steadying.
+          </p>
+        </div>
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-lg text-ochre shadow-xs">
+          5
+        </span>
+      </Link>
 
       <section>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-sage-400">
