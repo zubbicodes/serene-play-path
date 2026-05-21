@@ -211,13 +211,87 @@ const GAME_CARDS: Array<{
   },
 ];
 
+type Article = {
+  id: string;
+  chapter: string;
+  title: string;
+  subtitle: string;
+  duration: string;
+  paragraphs: string[];
+};
+
+const ARTICLES: Article[] = [
+  {
+    id: "neuroplasticity",
+    chapter: "01",
+    title: "Neuroplasticity",
+    subtitle: "How the brain quietly reshapes itself.",
+    duration: "5 min",
+    paragraphs: [
+      "Each time you try something new, your brain makes tiny pathways a little stronger. Over time, those pathways can change how you feel and what you notice.",
+      "This article invites you to notice the small ways your habits shape your thinking. When you return to an idea again and again, the brain learns a kinder path.",
+      "The work is gentle: small repetitions, small rewrites, one calm moment at a time.",
+    ],
+  },
+  {
+    id: "vagus-nerve",
+    chapter: "02",
+    title: "The Vagus Nerve",
+    subtitle: "Tapping into your body's calm circuit.",
+    duration: "6 min",
+    paragraphs: [
+      "The vagus nerve carries signals between your body and brain. When you slow your breath, it helps your body know it is safe.",
+      "This article walks through how simple pauses can quiet the nervous system and help your feelings settle, even if the day still feels busy.",
+      "A few deep breaths can make space for a clearer, softer response when thoughts feel loud.",
+    ],
+  },
+  {
+    id: "cognitive-distortions",
+    chapter: "03",
+    title: "Cognitive Distortions",
+    subtitle: "Spotting the small lies the mind tells.",
+    duration: "7 min",
+    paragraphs: [
+      "The mind can slip into thinking in black-or-white terms, jumping to the worst-case, or blaming itself too harshly.",
+      "This article helps you name those habits and notice them without needing to fix everything right away.",
+      "Once a thought is named, it becomes easier to choose a gentler response.",
+    ],
+  },
+  {
+    id: "habit-loop",
+    chapter: "04",
+    title: "The Habit Loop",
+    subtitle: "Small actions that support steady change.",
+    duration: "5 min",
+    paragraphs: [
+      "Habits grow from a cue, a routine, and a reward. When you change just one part, the whole loop can shift.",
+      "This article explores how tiny, repeated choices can make calm feel more possible over time.",
+      "A gentle routine can be a quiet way to bring a new feeling into your day.",
+    ],
+  },
+];
+
 function LibraryPage() {
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [articleExcerpt, setArticleExcerpt] = useState<string[]>([]);
+  const [showFullArticle, setShowFullArticle] = useState(false);
+  const [showArticleGames, setShowArticleGames] = useState(false);
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const target = activeGame ? screenRef.current : cardsRef.current;
+    if (selectedArticle) {
+      const slices = selectedArticle.paragraphs;
+      const count = Math.random() > 0.4 ? 2 : 1;
+      setArticleExcerpt(slices.slice(0, count));
+      setShowFullArticle(false);
+      setShowArticleGames(false);
+    }
+  }, [selectedArticle]);
+
+  useEffect(() => {
+    const target = activeGame || selectedArticle ? screenRef.current : cardsRef.current;
     if (!target) return;
 
     gsap.fromTo(
@@ -245,11 +319,17 @@ function LibraryPage() {
         },
       );
     }
-  }, [activeGame]);
+  }, [activeGame, selectedArticle, showArticleGames]);
+
+  useEffect(() => {
+    if (showArticleGames && cardsRef.current) {
+      cardsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [showArticleGames]);
 
   if (activeGame) {
     return (
-      <div ref={screenRef} className="space-y-5 opacity-0">
+      <div ref={screenRef} className="space-y-5">
         <button
           type="button"
           onClick={() => setActiveGame(null)}
@@ -270,21 +350,111 @@ function LibraryPage() {
     );
   }
 
+  if (selectedArticle) {
+    return (
+      <div ref={screenRef} className="space-y-8">
+        <button
+          type="button"
+          onClick={() => setSelectedArticle(null)}
+          className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-sage-700 shadow-xs transition hover:bg-sage-50"
+        >
+          <ArrowLeft className="size-4" />
+          Chapters
+        </button>
+
+        <article className="rounded-3xl border border-sage-900/5 bg-white p-6 shadow-xs">
+          <div className="flex items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-sage-600">
+            <span>Chapter {selectedArticle.chapter}</span>
+            <span>{selectedArticle.duration}</span>
+          </div>
+          <h1 className="mt-4 font-display text-3xl">{selectedArticle.title}</h1>
+          <p className="mt-4 text-sm leading-relaxed text-sage-600">{selectedArticle.subtitle}</p>
+          {(showFullArticle ? selectedArticle.paragraphs : articleExcerpt).map((paragraph, index) => (
+            <p key={index} className="mt-4 text-sm leading-relaxed text-sage-600">
+              {paragraph}
+            </p>
+          ))}
+          {!showFullArticle && selectedArticle.paragraphs.length > articleExcerpt.length && (
+            <button
+              type="button"
+              onClick={() => setShowFullArticle(true)}
+              className="mt-6 inline-flex w-full justify-center rounded-2xl border border-sage-900/10 bg-white px-5 py-4 text-sm font-bold uppercase tracking-[0.18em] text-sage-900 transition hover:bg-sage-50"
+            >
+              Read more
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveGame(null);
+              setShowArticleGames(true);
+            }}
+            className="mt-4 inline-flex w-full justify-center rounded-2xl bg-sage-900 px-5 py-4 text-sm font-bold uppercase tracking-[0.18em] text-primary-foreground transition hover:bg-sage-700"
+          >
+            Explore games for this article
+          </button>
+        </article>
+
+        {showArticleGames && (
+          <section ref={cardsRef} className="space-y-4">
+            <div className="space-y-2">
+              <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-sage-600">
+                Related practice
+              </span>
+              <h2 className="font-display text-2xl">Games for “{selectedArticle.title}”</h2>
+              <p className="max-w-[42ch] text-sm leading-relaxed text-sage-600">
+                Choose a gentle game that helps you practice the ideas you just read about.
+              </p>
+            </div>
+            {GAME_CARDS.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                onSelect={() => setActiveGame(game.id)}
+              />
+            ))}
+          </section>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fade-up">
       <header>
         <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-sage-600">
-          Mind Games
+          The Learning Hub
         </span>
-        <h1 className="mt-2 font-display text-3xl">Practice through play.</h1>
-        <p className="mt-2 max-w-[36ch] text-sm text-sage-600">
-          Build gentle mental health vocabulary and perspective with three gentle in-app games.
+        <h1 className="mt-2 font-display text-3xl">A quiet curriculum.</h1>
+        <p className="mt-2 max-w-[44ch] text-sm leading-relaxed text-sage-600">
+          Short readings, written by clinicians. Take one when you have a moment.
         </p>
       </header>
 
       <section ref={cardsRef} className="space-y-4 opacity-0">
-        {GAME_CARDS.map((game) => (
-          <GameCard key={game.id} game={game} onSelect={() => setActiveGame(game.id)} />
+        {ARTICLES.map((article) => (
+          <button
+            key={article.id}
+            type="button"
+            onClick={() => setSelectedArticle(article)}
+            className="w-full rounded-3xl border border-sage-900/5 bg-white p-5 text-left shadow-xs transition hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.99]"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-sage-50 text-sage-700 font-mono text-sm font-semibold">
+                {article.chapter}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="mb-2 flex items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-sage-500">
+                  <span>Chapter {article.chapter}</span>
+                  <span>{article.duration}</span>
+                </div>
+                <h2 className="font-display text-2xl">{article.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-sage-600">
+                  {article.subtitle}
+                </p>
+              </div>
+            </div>
+          </button>
         ))}
       </section>
     </div>
@@ -298,7 +468,7 @@ function GameCard({ game, onSelect }: { game: (typeof GAME_CARDS)[number]; onSel
     <button
       type="button"
       onClick={onSelect}
-      className="game-card w-full rounded-3xl border border-sage-900/5 bg-white p-5 text-left opacity-0 shadow-xs transition hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.99]"
+      className="game-card w-full rounded-3xl border border-sage-900/5 bg-white p-5 text-left shadow-xs transition hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.99]"
     >
       <div className="flex items-start gap-4">
         <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-sage-50 text-sage-700">

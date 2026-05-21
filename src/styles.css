@@ -177,6 +177,8 @@
 
 .mobile-app-screen {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
   border-radius: 34px;
@@ -185,7 +187,8 @@
 }
 
 .mobile-app-scroll {
-  height: calc(100% - 32px);
+  flex: 1;
+  min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
@@ -204,8 +207,7 @@
 }
 
 .mobile-bottom-nav {
-  position: absolute;
-  bottom: 0;
+  position: relative;
   z-index: 50;
   width: 100%;
 }
