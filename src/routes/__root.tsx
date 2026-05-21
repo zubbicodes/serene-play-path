@@ -119,16 +119,20 @@ function TopNav() {
             </span>
             <span className="text-sm font-semibold">12 Days</span>
           </div>
-          <div className="flex size-8 items-center justify-center rounded-full border border-sage-900/5 bg-sage-600/10">
-            <div className="size-2 rounded-full bg-ochre" />
-          </div>
+          <Link
+            to="/account"
+            aria-label="Open account"
+            className="grid size-9 place-items-center rounded-full border border-sage-900/5 bg-white text-sage-700 shadow-xs transition hover:bg-sage-50 active:scale-95"
+          >
+            <UserRound className="size-4" />
+          </Link>
         </div>
       </div>
     </nav>
   );
 }
 
-import { Home, Leaf, Library, Sparkles, TriangleAlert } from "lucide-react";
+import { Home, Leaf, Library, Sparkles, TriangleAlert, UserRound } from "lucide-react";
 
 function BottomNav() {
   const items = [

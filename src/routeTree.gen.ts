@@ -14,6 +14,7 @@ import { Route as ReliefRouteImport } from './routes/relief'
 import { Route as ReflectionRouteImport } from './routes/reflection'
 import { Route as PanicRouteImport } from './routes/panic'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PracticeThoughtSortingRouteImport } from './routes/practice.thought-sorting'
 import { Route as PracticeThoughtShredderRouteImport } from './routes/practice.thought-shredder'
@@ -43,6 +44,11 @@ const LibraryRoute = LibraryRouteImport.update({
   path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,6 +67,7 @@ const PracticeThoughtShredderRoute = PracticeThoughtShredderRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/library': typeof LibraryRoute
   '/panic': typeof PanicRoute
   '/reflection': typeof ReflectionRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/library': typeof LibraryRoute
   '/panic': typeof PanicRoute
   '/reflection': typeof ReflectionRoute
@@ -82,6 +90,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/library': typeof LibraryRoute
   '/panic': typeof PanicRoute
   '/reflection': typeof ReflectionRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/library'
     | '/panic'
     | '/reflection'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/library'
     | '/panic'
     | '/reflection'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/library'
     | '/panic'
     | '/reflection'
@@ -125,6 +137,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   LibraryRoute: typeof LibraryRoute
   PanicRoute: typeof PanicRoute
   ReflectionRoute: typeof ReflectionRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -197,6 +217,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   LibraryRoute: LibraryRoute,
   PanicRoute: PanicRoute,
   ReflectionRoute: ReflectionRoute,
